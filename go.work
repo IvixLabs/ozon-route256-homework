@@ -1,0 +1,15 @@
+go 1.22.2
+
+use (
+	cart
+	common
+	debugsrv
+	launcher
+	logger
+	loms
+	metrics
+	notifier
+	pprof
+	swagger
+	transactionalbox
+)

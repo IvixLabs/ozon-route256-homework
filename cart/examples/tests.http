@@ -1,0 +1,255 @@
+### remove unknown cart
+DELETE http://localhost:8082/user/123/cart
+Content-Type: application/json
+
+> {%
+  client.test("remove unknown cart", function () {
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(JSON.stringify(response.body) === '{"message":"entity is not found: cart is not found"}', "Wrong body")
+  });
+%}
+
+
+### add 1 sku to cart
+POST http://localhost:8082/user/31337/cart/1076963
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("add 1 sku to cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 200 OK; must add 1 item
+
+### remove unknown sku from cart
+DELETE http://localhost:8082/user/31337/cart/123
+Content-Type: application/json
+
+> {%
+  client.test("remove unknown sku from cart", function () {
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(JSON.stringify(response.body) === '{"message":"entity is not found: cart item is not found"}', "Wrong body")
+  });
+%}
+
+### add 1 sku to cart
+POST http://localhost:8082/user/31338/cart/1076963
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("add 1 sku to cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 200 OK; must add 1 item
+
+
+### add 5 sku to cart
+POST http://localhost:8082/user/31337/cart/1076963
+Content-Type: application/json
+
+{
+  "count": 3
+}
+
+> {%
+  client.test("add 5 sku to cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 200 OK; must add 5 more item, 1076963000 - must be 6 items
+
+### add unknown sku to cart
+POST http://localhost:8082/user/31337/cart/1076963000
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("add unknown sku to cart", function () {
+    client.assert(response.status === 412, "Response status is not 412")
+    client.assert(JSON.stringify(response.body) === '{"message":"wrong argument: product sku is not found"}', "Wrong body")
+  });
+%}
+### expected {} 412 Precondition Failed; invalid sku
+
+### add another sku to cart
+POST http://localhost:8082/user/31337/cart/1148162
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("add another sku to cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 200 OK; must add 1 item
+
+### invalid user
+POST http://localhost:8082/user/0/cart/1148162
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("invalid user", function () {
+    client.assert(response.status === 400, "Response status is not 400");
+    client.assert(JSON.stringify(response.body) === '{"message":"validation error: wrong id"}', "Wrong body")
+  });
+%}
+### expected {} 400 Bad Request
+
+### invalid sku
+POST http://localhost:8082/user/31337/cart/0
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("invalid sku", function () {
+    client.assert(response.status === 400, "Response status is not 400");
+    client.assert(JSON.stringify(response.body) === '{"message":"validation error: wrong sku"}', "Wrong body")
+  });
+%}
+### expected {} 400 Bad Request
+
+### invalid count
+POST http://localhost:8082/user/31337/cart/1148162
+Content-Type: application/json
+
+{
+  "count": 0
+}
+
+> {%
+  client.test("invalid count", function () {
+    client.assert(response.status === 400, "Response status is not 400");
+    client.assert(JSON.stringify(response.body) === '{"message":"validation error Key: \'addCartItemRequest.Count\' Error:Field validation for \'Count\' failed on the \'gt\' tag"}', "Wrong body")
+  });
+%}
+### expected {} 400 Bad Request
+
+# ========================================================================================
+
+### remove whole sku from cart
+DELETE http://localhost:8082/user/31337/cart/1076963
+Content-Type: application/json
+
+> {%
+  client.test("remove whole sku from cart", function () {
+    client.assert(response.status === 204, "Response status is not 204");
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 204 OK; must delete item from cart
+
+### delete whole cart
+DELETE http://localhost:8082/user/31337/cart
+Content-Type: application/json
+
+> {%
+  client.test("delete whole cart", function () {
+    client.assert(response.status === 204, "Response status is not 204");
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 204 OK; must delete cart
+
+# ========================================================================================
+
+### get list of a cart
+GET http://localhost:8082/user/31338/cart/list/
+Content-Type: application/json
+
+> {%
+  client.test("get list of a cart", function () {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.assert(JSON.stringify(response.body) === "{\"items\":[{\"sku_id\":1076963,\"name\":\"Теория нравственных чувств | Смит Адам\",\"count\":1,\"price\":3379}],\"total_price\":3379}", "Wrong body")
+  });
+%}
+### expected {} 200 OK; must show cart
+
+### get invalid list of cart
+GET http://localhost:8082/user/0/cart/list/
+Content-Type: application/json
+
+> {%
+  client.test("get invalid list of cart", function () {
+    client.assert(response.status === 400, "Response status is not 400");
+    client.assert(JSON.stringify(response.body) === '{"message":"validation error: wrong id"}', "Wrong body")
+  });
+%}
+### 404 bad request
+
+### delete whole cart
+DELETE http://localhost:8082/user/31338/cart
+Content-Type: application/json
+
+> {%
+  client.test("delete whole cart", function () {
+    client.assert(response.status === 204, "Response status is not 204");
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 204 OK; must delete cart
+
+### add 1 sku to cart
+POST http://localhost:8082/user/555/cart/1076963
+Content-Type: application/json
+
+{
+  "count": 1
+}
+
+> {%
+  client.test("add 1 sku to cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(response.body === null, "Body is not empty")
+  });
+%}
+### expected {} 200 OK; must add 1 item
+
+### add 1 sku to cart
+POST http://localhost:8082/user/555/cart/checkout
+Content-Type: application/json
+
+> {%
+  client.test("checkout cart", function () {
+    client.assert(response.status === 200, "Response status is not 200")
+    client.assert(JSON.stringify(response.body).indexOf("orderID") !== -1, "No orderID")
+  });
+%}
+### expected {} 200 OK; must add 1 item
+
+### get list of a cart
+GET http://localhost:8082/user/555/cart/list/
+Content-Type: application/json
+
+> {%
+  client.test("get is removed", function () {
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body === null, "Wrong body")
+  });
+%}
+### expected {} 200 OK; must show cart

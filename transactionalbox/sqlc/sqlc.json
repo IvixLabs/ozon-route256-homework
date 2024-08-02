@@ -1,0 +1,17 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "postgresql",
+      "schema": "../migrations",
+      "gen": {
+        "go": {
+          "package": "sqlc",
+          "out": "../pkg/transactionalbox/store/sqlc",
+          "sql_package": "pgx/v5"
+        }
+      },
+      "queries": "../pkg/transactionalbox/store/sqlc"
+    }
+  ]
+}

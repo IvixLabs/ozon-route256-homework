@@ -1,0 +1,2 @@
+POST http://localhost:8082/user/1/cart/checkout
+Content-Type: application/json

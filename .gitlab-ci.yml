@@ -1,0 +1,26 @@
+union-tests:
+  stage: test
+  variables:
+      REPORTS_DIR: /builds/$CI_PROJECT_PATH/reports
+  script:
+    - echo '===Building image==='
+    - docker build -t app-test . 
+    - echo '===E2E tests==='
+    - docker run -v /var/run/docker.sock:/var/run/docker.sock app-test make run-all-e2e-tests
+    - echo '===Integration tests==='
+    - docker run -v /var/run/docker.sock:/var/run/docker.sock app-test make run-all-integration-tests 
+    - echo '===Gocognit linter==='
+    - docker run app-test make run-all-gocognit-linters
+    - echo '===Gocyclo linter==='
+    - docker run app-test make run-all-gocyclo-linters
+    - echo '===Unit tests==='
+    - mkdir -p ${REPORTS_DIR}
+    - docker run app-test make ci-run-all-unit-tests > $REPORTS_DIR/reports.mix
+    - sh build-reports.sh
+  artifacts:
+    when: always
+    reports:
+      junit: $REPORTS_DIR/test-report-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: $REPORTS_DIR/coverage-*.xml

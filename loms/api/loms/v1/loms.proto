@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package route256.loms.pkg.api.loms.v1;
+
+option go_package = "route256/loms/pkg/api/loms/v1;loms";
+
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/api/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "LOMS";
+        version: "1.0.0";
+    };
+    schemes: HTTP;
+    schemes: HTTPS;
+    consumes: "application/json";
+    produces: "application/json";
+};
+
+service Loms {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {
+        description: "LOMS service"
+        external_docs: {
+            description: "Logistics and Order Management System";
+            url: "https://route256.ozon.ru";
+        }
+    };
+    rpc OrderInfo(OrderInfoRequest) returns (OrderInfoResponse) {
+        option (google.api.http) = {
+            get: "/v1/order/{orderID}/info"
+        };
+    }
+    rpc OrderCreate(OrderCreateRequest) returns (OrderCreateResponse) {
+        option (google.api.http) = {
+            post: "/v1/order/create"
+            body: "*"
+        };
+    }
+    rpc OrderPay(OrderPayRequest) returns (OrderPayResponse) {
+        option (google.api.http) = {
+            post: "/v1/order/{orderID}/pay"
+        };
+    }
+    rpc OrderCancel(OrderCancelRequest) returns (OrderCancelResponse) {
+        option (google.api.http) = {
+            post: "/v1/order/{orderID}/cancel"
+        };
+    }
+    rpc StockInfo(StockInfoRequest) returns (StockInfoResponse) {
+        option (google.api.http) = {
+            get: "/v1/stock/{sku}/info"
+        };
+    }
+}
+
+message OrderInfoRequest {
+    int64 orderID = 1 [
+        (validate.rules).int64.gt = 0
+    ];
+}
+
+message OrderInfoResponse {
+    string status = 1;
+    repeated OrderItem items = 2;
+}
+
+message OrderItem {
+    uint32 sku = 1 [
+        (validate.rules).uint32.gt = 0
+    ];
+    uint32 count = 2 [
+        (validate.rules).uint32.gt = 0
+    ];
+}
+
+message OrderCreateRequest {
+    int64 user = 1 [
+        (validate.rules).int64.gte = 0
+    ];
+    repeated OrderItem items = 2 [
+        (validate.rules).repeated.min_items = 1
+    ];
+}
+
+message OrderCreateResponse {
+    int64 orderID = 1 ;
+}
+
+message OrderPayRequest {
+    int64 orderID = 1 [
+        (validate.rules).int64.gt = 0
+    ];
+}
+
+message OrderPayResponse {
+}
+
+message OrderCancelRequest {
+    int64 orderID = 1 [
+        (validate.rules).int64.gt = 0
+    ];
+}
+
+message OrderCancelResponse {
+}
+
+message StockInfoRequest {
+    uint32 sku = 1 [
+        (validate.rules).uint32.gt = 0
+    ];
+}
+
+message StockInfoResponse {
+    uint64 count = 1;
+}
