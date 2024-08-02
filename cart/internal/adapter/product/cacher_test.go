@@ -19,13 +19,13 @@ func TestCacher(t *testing.T) {
 	provider := mock.NewProductProviderMock(t)
 
 	sku := model.Sku(123)
-	product := &model.Product{Name: "Prod123", Price: 1230}
+	product := model.Product{Name: "Prod123", Price: 1230}
 
 	skuNotExists := model.Sku(111)
 
 	provider.
 		GetMock.When(ctx, sku).Then(product, nil).
-		GetMock.When(ctx, skuNotExists).Then(nil, cart.ErrProductSkuNotFound)
+		GetMock.When(ctx, skuNotExists).Then(cart.EmptyProduct, cart.ErrProductSkuNotFound)
 
 	inmemoryCache := inmemory.NewCache[CacheItem](CacheItem{})
 	cacher := NewCacher(provider, inmemoryCache)
@@ -40,7 +40,7 @@ func TestCacher(t *testing.T) {
 
 	nilProd, err := cacher.Get(ctx, skuNotExists)
 	assert.ErrorIs(t, err, cart.ErrProductSkuNotFound)
-	assert.Nil(t, nilProd)
+	assert.Equal(t, cart.EmptyProduct, nilProd)
 }
 
 func TestCacherRace(t *testing.T) {
@@ -48,10 +48,10 @@ func TestCacherRace(t *testing.T) {
 	provider := mock.NewProductProviderMock(t)
 
 	totalProducts := 50
-	products := make([]*model.Product, totalProducts)
+	products := make([]model.Product, totalProducts)
 	for i := 0; i < totalProducts; i++ {
 
-		product := &model.Product{Name: fmt.Sprintf("Product %d", i), Price: model.Price(i * 10)}
+		product := model.Product{Name: fmt.Sprintf("Product %d", i), Price: model.Price(i * 10)}
 		products[i] = product
 
 		provider = provider.GetMock.Optional().When(ctx, model.Sku(i)).Then(product, nil)

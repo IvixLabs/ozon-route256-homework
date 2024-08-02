@@ -2,7 +2,7 @@ LOMS_PROTO_PATH=loms/v1
 
 BIN_PATH=$(CURDIR)/bin
 
-TEST_DIRS=./internal/usecase/cart/... ./internal/repository/cart/... ./internal/model/...
+TEST_DIRS=./internal/usecase/cart/... ./internal/repository/cart/... ./internal/model/... ./internal/adapter/product/...
 
 .PHONY: build
 build:
